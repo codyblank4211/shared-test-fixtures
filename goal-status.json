@@ -1,0 +1,81 @@
+{
+  "description": "Contract tests for goal status derivation — shared between Flutter (Dart) and web (TypeScript)",
+  "conventions": {
+    "now": "Each case provides a 'now' date so tests are deterministic. Both implementations must accept an injectable clock.",
+    "status": "One of: 'completed', 'in_progress', 'missed'"
+  },
+  "cases": [
+    {
+      "id": "completed_before_end",
+      "description": "Target met before end date",
+      "completedCount": 5,
+      "targetCount": 5,
+      "endDate": "2025-06-01",
+      "now": "2025-03-15",
+      "expected": "completed"
+    },
+    {
+      "id": "completed_over_target",
+      "description": "Exceeded target count",
+      "completedCount": 8,
+      "targetCount": 5,
+      "endDate": "2025-06-01",
+      "now": "2025-03-15",
+      "expected": "completed"
+    },
+    {
+      "id": "completed_after_end",
+      "description": "Target met even though past end date — completed takes priority",
+      "completedCount": 5,
+      "targetCount": 5,
+      "endDate": "2025-01-01",
+      "now": "2025-03-15",
+      "expected": "completed"
+    },
+    {
+      "id": "missed",
+      "description": "End date passed without reaching target",
+      "completedCount": 2,
+      "targetCount": 5,
+      "endDate": "2025-01-01",
+      "now": "2025-03-15",
+      "expected": "missed"
+    },
+    {
+      "id": "missed_zero_progress",
+      "description": "No progress and deadline passed",
+      "completedCount": 0,
+      "targetCount": 5,
+      "endDate": "2025-01-01",
+      "now": "2025-03-15",
+      "expected": "missed"
+    },
+    {
+      "id": "in_progress",
+      "description": "Some progress, before end date",
+      "completedCount": 2,
+      "targetCount": 5,
+      "endDate": "2025-06-01",
+      "now": "2025-03-15",
+      "expected": "in_progress"
+    },
+    {
+      "id": "in_progress_zero",
+      "description": "No progress yet, but still time remaining",
+      "completedCount": 0,
+      "targetCount": 5,
+      "endDate": "2025-06-01",
+      "now": "2025-03-15",
+      "expected": "in_progress"
+    },
+    {
+      "id": "in_progress_one_short",
+      "description": "One short of target, before deadline",
+      "completedCount": 4,
+      "targetCount": 5,
+      "endDate": "2025-06-01",
+      "now": "2025-03-15",
+      "expected": "in_progress"
+    }
+  ]
+}

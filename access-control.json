@@ -1,0 +1,183 @@
+{
+  "description": "Contract tests for access control filtering — shared between Flutter (Dart) and web (TypeScript)",
+  "conventions": {
+    "tagField": "Either 'taskId' or 'reasonId', indicating which field on Tag links to the item"
+  },
+  "cases": [
+    {
+      "id": "admin_sees_all",
+      "description": "Admin users can see all items regardless of group membership",
+      "userId": "user1",
+      "userRole": "admin",
+      "items": [
+        {"id": "item1"},
+        {"id": "item2"},
+        {"id": "item3"}
+      ],
+      "tags": [
+        {"taskId": "item2", "groupId": "private-group"},
+        {"taskId": "item3", "groupId": "private-group"}
+      ],
+      "groups": [
+        {"id": "private-group", "isPrivate": true}
+      ],
+      "memberships": [],
+      "tagField": "taskId",
+      "expected": ["item1", "item2", "item3"]
+    },
+    {
+      "id": "superadmin_sees_all",
+      "description": "Superadmin users can see all items",
+      "userId": "user1",
+      "userRole": "superadmin",
+      "items": [
+        {"id": "item1"},
+        {"id": "item2"}
+      ],
+      "tags": [
+        {"taskId": "item2", "groupId": "private-group"}
+      ],
+      "groups": [
+        {"id": "private-group", "isPrivate": true}
+      ],
+      "memberships": [],
+      "tagField": "taskId",
+      "expected": ["item1", "item2"]
+    },
+    {
+      "id": "no_groups_are_public",
+      "description": "Items not in any group are visible to all users",
+      "userId": "user1",
+      "userRole": "user",
+      "items": [
+        {"id": "item1"},
+        {"id": "item2"}
+      ],
+      "tags": [],
+      "groups": [],
+      "memberships": [],
+      "tagField": "taskId",
+      "expected": ["item1", "item2"]
+    },
+    {
+      "id": "public_groups_visible_to_all",
+      "description": "Items in public groups are visible to everyone",
+      "userId": "user1",
+      "userRole": "user",
+      "items": [
+        {"id": "item1"},
+        {"id": "item2"}
+      ],
+      "tags": [
+        {"taskId": "item1", "groupId": "public-group"},
+        {"taskId": "item2", "groupId": "public-group"}
+      ],
+      "groups": [
+        {"id": "public-group", "isPrivate": false}
+      ],
+      "memberships": [],
+      "tagField": "taskId",
+      "expected": ["item1", "item2"]
+    },
+    {
+      "id": "private_group_member_sees_items",
+      "description": "User who is a member of a private group can see its items",
+      "userId": "user1",
+      "userRole": "user",
+      "items": [
+        {"id": "item1"},
+        {"id": "item2"}
+      ],
+      "tags": [
+        {"taskId": "item2", "groupId": "private-group"}
+      ],
+      "groups": [
+        {"id": "private-group", "isPrivate": true}
+      ],
+      "memberships": [
+        {"userId": "user1", "groupId": "private-group"}
+      ],
+      "tagField": "taskId",
+      "expected": ["item1", "item2"]
+    },
+    {
+      "id": "private_group_non_member_blocked",
+      "description": "User NOT in private group cannot see its items",
+      "userId": "user1",
+      "userRole": "user",
+      "items": [
+        {"id": "item1"},
+        {"id": "item2"}
+      ],
+      "tags": [
+        {"taskId": "item2", "groupId": "private-group"}
+      ],
+      "groups": [
+        {"id": "private-group", "isPrivate": true}
+      ],
+      "memberships": [],
+      "tagField": "taskId",
+      "expected": ["item1"]
+    },
+    {
+      "id": "mixed_public_and_private",
+      "description": "Item in both public and private groups — blocked if user not in private group",
+      "userId": "user1",
+      "userRole": "user",
+      "items": [
+        {"id": "item1"}
+      ],
+      "tags": [
+        {"taskId": "item1", "groupId": "public-group"},
+        {"taskId": "item1", "groupId": "private-group"}
+      ],
+      "groups": [
+        {"id": "public-group", "isPrivate": false},
+        {"id": "private-group", "isPrivate": true}
+      ],
+      "memberships": [],
+      "tagField": "taskId",
+      "expected": []
+    },
+    {
+      "id": "staff_not_exempt_from_private",
+      "description": "Staff role does NOT bypass private group checks (only admin/superadmin do)",
+      "userId": "user1",
+      "userRole": "staff",
+      "items": [
+        {"id": "item1"},
+        {"id": "item2"}
+      ],
+      "tags": [
+        {"taskId": "item2", "groupId": "private-group"}
+      ],
+      "groups": [
+        {"id": "private-group", "isPrivate": true}
+      ],
+      "memberships": [],
+      "tagField": "taskId",
+      "expected": ["item1"]
+    },
+    {
+      "id": "care_reason_tag_field",
+      "description": "Access control works with reasonId tag field for care reasons",
+      "userId": "user1",
+      "userRole": "user",
+      "items": [
+        {"id": "reason1"},
+        {"id": "reason2"}
+      ],
+      "tags": [
+        {"reasonId": "reason2", "groupId": "private-group"}
+      ],
+      "groups": [
+        {"id": "private-group", "isPrivate": true}
+      ],
+      "memberships": [
+        {"userId": "user1", "groupId": "private-group"}
+      ],
+      "tagField": "reasonId",
+      "expected": ["reason1", "reason2"]
+    }
+  ]
+}
