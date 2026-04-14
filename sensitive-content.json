@@ -1,0 +1,122 @@
+{
+  "description": "Contract tests for sensitive content visibility — shared between Flutter (Dart) and web (TypeScript)",
+  "conventions": {
+    "rule": "Sensitive content (descriptions, notes) is visible only to: (1) admins/superadmins, or (2) group admins for any group the item belongs to. All others see redacted placeholder text.",
+    "memberships": "Each membership has isGroupAdmin boolean indicating if the user is an admin of that group."
+  },
+  "cases": [
+    {
+      "id": "admin_sees_sensitive",
+      "description": "Admin users can view all sensitive content",
+      "userId": "user1",
+      "userRole": "admin",
+      "itemId": "task1",
+      "tags": [
+        { "taskId": "task1", "groupId": "group1" }
+      ],
+      "memberships": [],
+      "tagField": "taskId",
+      "expected": true
+    },
+    {
+      "id": "superadmin_sees_sensitive",
+      "description": "Superadmin users can view all sensitive content",
+      "userId": "user1",
+      "userRole": "superadmin",
+      "itemId": "task1",
+      "tags": [
+        { "taskId": "task1", "groupId": "group1" }
+      ],
+      "memberships": [],
+      "tagField": "taskId",
+      "expected": true
+    },
+    {
+      "id": "group_admin_sees_sensitive",
+      "description": "A group admin for a group the item belongs to can view sensitive content",
+      "userId": "user1",
+      "userRole": "user",
+      "itemId": "task1",
+      "tags": [
+        { "taskId": "task1", "groupId": "group1" }
+      ],
+      "memberships": [
+        { "userId": "user1", "groupId": "group1", "isGroupAdmin": true }
+      ],
+      "tagField": "taskId",
+      "expected": true
+    },
+    {
+      "id": "regular_user_blocked",
+      "description": "Regular user who is not a group admin cannot view sensitive content",
+      "userId": "user1",
+      "userRole": "user",
+      "itemId": "task1",
+      "tags": [
+        { "taskId": "task1", "groupId": "group1" }
+      ],
+      "memberships": [
+        { "userId": "user1", "groupId": "group1", "isGroupAdmin": false }
+      ],
+      "tagField": "taskId",
+      "expected": false
+    },
+    {
+      "id": "group_admin_different_group_blocked",
+      "description": "Being a group admin in a different group does not grant access",
+      "userId": "user1",
+      "userRole": "user",
+      "itemId": "task1",
+      "tags": [
+        { "taskId": "task1", "groupId": "group1" }
+      ],
+      "memberships": [
+        { "userId": "user1", "groupId": "group2", "isGroupAdmin": true }
+      ],
+      "tagField": "taskId",
+      "expected": false
+    },
+    {
+      "id": "item_with_no_groups_blocked",
+      "description": "Items not in any group — regular users cannot view sensitive content (no group admin path)",
+      "userId": "user1",
+      "userRole": "user",
+      "itemId": "task1",
+      "tags": [],
+      "memberships": [],
+      "tagField": "taskId",
+      "expected": false
+    },
+    {
+      "id": "group_admin_one_of_multiple_groups",
+      "description": "Group admin for at least one of the item's groups can view",
+      "userId": "user1",
+      "userRole": "user",
+      "itemId": "task1",
+      "tags": [
+        { "taskId": "task1", "groupId": "group1" },
+        { "taskId": "task1", "groupId": "group2" }
+      ],
+      "memberships": [
+        { "userId": "user1", "groupId": "group2", "isGroupAdmin": true }
+      ],
+      "tagField": "taskId",
+      "expected": true
+    },
+    {
+      "id": "care_reason_tag_field",
+      "description": "Works with reasonId tag field for care reasons",
+      "userId": "user1",
+      "userRole": "user",
+      "itemId": "reason1",
+      "tags": [
+        { "reasonId": "reason1", "groupId": "group1" }
+      ],
+      "memberships": [
+        { "userId": "user1", "groupId": "group1", "isGroupAdmin": true }
+      ],
+      "tagField": "reasonId",
+      "expected": true
+    }
+  ]
+}

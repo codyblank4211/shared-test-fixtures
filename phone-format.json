@@ -1,0 +1,69 @@
+{
+  "description": "Contract tests for phone number formatting — shared between Flutter (Dart) and web (TypeScript)",
+  "conventions": {
+    "format": "US phone format: (XXX) XXX-XXXX. Strips all non-digit characters first, truncates to 10 digits, then applies formatting progressively.",
+    "progressive": "Formatting is applied as-you-type: 1-3 digits get '(XXX', 4-6 get '(XXX) XXX', 7-10 get '(XXX) XXX-XXXX'."
+  },
+  "cases": [
+    {
+      "id": "empty",
+      "description": "Empty input returns empty string",
+      "input": "",
+      "expected": ""
+    },
+    {
+      "id": "one_digit",
+      "input": "5",
+      "expected": "(5"
+    },
+    {
+      "id": "three_digits",
+      "input": "512",
+      "expected": "(512"
+    },
+    {
+      "id": "four_digits",
+      "input": "5124",
+      "expected": "(512) 4"
+    },
+    {
+      "id": "six_digits",
+      "input": "512456",
+      "expected": "(512) 456"
+    },
+    {
+      "id": "seven_digits",
+      "input": "5124567",
+      "expected": "(512) 456-7"
+    },
+    {
+      "id": "ten_digits",
+      "input": "5124567890",
+      "expected": "(512) 456-7890"
+    },
+    {
+      "id": "over_ten_digits",
+      "description": "Truncates to 10 digits",
+      "input": "51245678901234",
+      "expected": "(512) 456-7890"
+    },
+    {
+      "id": "with_non_digits",
+      "description": "Strips non-digit characters before formatting",
+      "input": "(512) 456-7890",
+      "expected": "(512) 456-7890"
+    },
+    {
+      "id": "mixed_characters",
+      "description": "Letters and symbols stripped",
+      "input": "abc512def456ghi",
+      "expected": "(512) 456"
+    },
+    {
+      "id": "all_non_digits",
+      "description": "No digits returns empty",
+      "input": "abc-def",
+      "expected": ""
+    }
+  ]
+}

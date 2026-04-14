@@ -1,0 +1,36 @@
+{
+  "description": "Contract tests for role hierarchy and permission predicates — shared between Flutter (Dart) and web (TypeScript)",
+  "conventions": {
+    "roles": "Valid roles: 'superadmin', 'admin', 'user'. Null/empty treated as unprivileged.",
+    "predicates": "Each predicate returns a boolean. Predicates: 'isSuperAdmin', 'isAtLeastAdmin'."
+  },
+  "cases": [
+    {
+      "id": "superadmin_is_superadmin",
+      "role": "superadmin",
+      "expected": { "isSuperAdmin": true, "isAtLeastAdmin": true }
+    },
+    {
+      "id": "admin_is_not_superadmin",
+      "role": "admin",
+      "expected": { "isSuperAdmin": false, "isAtLeastAdmin": true }
+    },
+    {
+      "id": "user_has_no_elevated_perms",
+      "role": "user",
+      "expected": { "isSuperAdmin": false, "isAtLeastAdmin": false }
+    },
+    {
+      "id": "null_role",
+      "description": "Null role treated as unprivileged",
+      "role": null,
+      "expected": { "isSuperAdmin": false, "isAtLeastAdmin": false }
+    },
+    {
+      "id": "empty_string_role",
+      "description": "Empty string treated as unprivileged",
+      "role": "",
+      "expected": { "isSuperAdmin": false, "isAtLeastAdmin": false }
+    }
+  ]
+}

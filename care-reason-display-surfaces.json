@@ -1,0 +1,110 @@
+{
+  "description": "Canonical spec for care reason display surfaces — documents what security, filtering, and sensitive content redaction each surface must apply. Shared between Flutter (Dart) and web (TypeScript).",
+  "conventions": {
+    "accessControl": "'group_filter' = filter care reasons by group membership (admins see all, public groups visible to all, private groups require membership). 'single_item_check' = verify user can access a specific care reason. 'none' = no access control needed.",
+    "sensitiveRedaction": "'admin_or_group_admin' = admins and group admins see sensitive content; all others see redacted placeholder text. 'none' = no sensitive content displayed on this surface.",
+    "filters": "Array of filter types that must be available on this surface. Each platform implements these filters but the set must match."
+  },
+  "surfaces": [
+    {
+      "id": "care_reasons_list",
+      "name": "Care Reasons List",
+      "description": "Main paginated care reason list with filtering, search, and view modes (table, cards)",
+      "route": "/care-reasons",
+      "accessControl": "group_filter",
+      "sensitiveRedaction": "admin_or_group_admin",
+      "filters": ["status", "assignedUser", "unassigned", "member", "groups", "dateRange", "search", "archive"],
+      "fieldsShown": ["title", "descriptionPreview", "status", "dateOfEvent", "member", "assignee", "groups", "sensitivityBadge"]
+    },
+    {
+      "id": "care_reason_detail",
+      "name": "Care Reason Detail",
+      "description": "Full detail view for a single care reason including notes, related tasks, and group tags",
+      "route": "/care-reasons/:id",
+      "accessControl": "single_item_check",
+      "sensitiveRedaction": "admin_or_group_admin",
+      "filters": [],
+      "fieldsShown": ["title", "description", "status", "dateOfEvent", "member", "assignee", "groups", "notes", "relatedTasks", "sensitivityBadge", "completedAt", "createdAt"]
+    },
+    {
+      "id": "care_reason_form",
+      "name": "Care Reason Edit Form",
+      "description": "Edit form for an existing care reason. Must verify user can access the care reason before showing the form.",
+      "route": "/care-reasons/:id/edit",
+      "accessControl": "single_item_check",
+      "sensitiveRedaction": "none",
+      "filters": [],
+      "fieldsShown": ["title", "description", "dateOfEvent", "member", "assignee", "groups", "isSensitive"]
+    },
+    {
+      "id": "dashboard_feed",
+      "name": "Dashboard — Feed",
+      "description": "Activity feed showing care reasons alongside completed tasks. Care reasons shown in feed variant cards.",
+      "route": "/dashboard",
+      "accessControl": "group_filter",
+      "sensitiveRedaction": "admin_or_group_admin",
+      "filters": ["itemType", "member", "dateRange"],
+      "fieldsShown": ["title", "descriptionPreview", "member", "assignee", "dateOfEvent", "sensitivityBadge"]
+    },
+    {
+      "id": "dashboard_kpis",
+      "name": "Dashboard — KPI Cards",
+      "description": "Numeric count of active care reasons. No content exposed.",
+      "route": "/dashboard",
+      "accessControl": "none",
+      "sensitiveRedaction": "none",
+      "filters": [],
+      "fieldsShown": ["activeCareReasonCount"]
+    },
+    {
+      "id": "member_detail",
+      "name": "Member Detail",
+      "description": "Care reasons related to a specific church member, shown on the member detail page",
+      "route": "/members/:id",
+      "accessControl": "group_filter",
+      "sensitiveRedaction": "admin_or_group_admin",
+      "filters": ["byMemberId"],
+      "fieldsShown": ["title", "status", "dateOfEvent", "sensitivityBadge"]
+    },
+    {
+      "id": "task_detail",
+      "name": "Task Detail — Linked Care Reason",
+      "description": "A task may link to a care reason. The care reason title is displayed on the task detail page.",
+      "route": "/tasks/:id",
+      "accessControl": "group_filter",
+      "sensitiveRedaction": "admin_or_group_admin",
+      "filters": [],
+      "fieldsShown": ["title"]
+    },
+    {
+      "id": "task_detail_drawer",
+      "name": "Task Detail Drawer — Linked Care Reason",
+      "description": "Desktop drawer variant of task detail. Same care reason title display.",
+      "route": "/tasks (drawer)",
+      "accessControl": "group_filter",
+      "sensitiveRedaction": "admin_or_group_admin",
+      "filters": [],
+      "fieldsShown": ["title"]
+    },
+    {
+      "id": "task_form",
+      "name": "Task Form — Care Reason Picker",
+      "description": "Task create/edit form includes a care reason picker. Only accessible care reasons should appear.",
+      "route": "/tasks/:id/edit",
+      "accessControl": "group_filter",
+      "sensitiveRedaction": "none",
+      "filters": [],
+      "fieldsShown": ["title"]
+    },
+    {
+      "id": "reports",
+      "name": "Reports",
+      "description": "Aggregate care reason statistics (active count, resolved count, avg resolution days). No individual content exposed.",
+      "route": "/reports",
+      "accessControl": "none",
+      "sensitiveRedaction": "none",
+      "filters": ["dateRange"],
+      "fieldsShown": ["activeCareReasonCount", "resolvedCareReasonCount", "averageResolutionDays"]
+    }
+  ]
+}

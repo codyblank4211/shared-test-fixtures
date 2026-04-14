@@ -1,0 +1,110 @@
+{
+  "description": "Canonical spec for task display surfaces — documents what security, filtering, and sensitive content redaction each surface must apply. Shared between Flutter (Dart) and web (TypeScript).",
+  "conventions": {
+    "accessControl": "'group_filter' = filter tasks by group membership (admins see all, public groups visible to all, private groups require membership). 'single_item_check' = verify user can access a specific task. 'assigned_to_current_user' = implicitly filtered to tasks assigned to the current user. 'none' = no access control needed.",
+    "sensitiveRedaction": "'admin_or_group_admin' = admins and group admins see sensitive content; all others see redacted placeholder text. 'none' = no sensitive content displayed on this surface.",
+    "filters": "Array of filter types that must be available on this surface. Each platform implements these filters but the set must match."
+  },
+  "surfaces": [
+    {
+      "id": "tasks_list",
+      "name": "Tasks List",
+      "description": "Main paginated task list with filtering, search, and multiple view modes (table, cards, calendar)",
+      "route": "/tasks",
+      "accessControl": "group_filter",
+      "sensitiveRedaction": "admin_or_group_admin",
+      "filters": ["status", "assignedUser", "unassigned", "member", "groups", "dateRange", "search", "archive"],
+      "fieldsShown": ["title", "descriptionPreview", "status", "dueDate", "member", "assignee", "interactionType", "groups", "recurringIndicator", "sensitivityBadge"]
+    },
+    {
+      "id": "dashboard_my_tasks",
+      "name": "Dashboard — My Tasks",
+      "description": "Tasks assigned to the current user, shown on the dashboard. Implicitly filtered by assignment so access control is inherent.",
+      "route": "/dashboard",
+      "accessControl": "assigned_to_current_user",
+      "sensitiveRedaction": "admin_or_group_admin",
+      "filters": ["timePeriod", "incompleteOnly"],
+      "fieldsShown": ["title", "member", "dueDate", "status", "interactionType"]
+    },
+    {
+      "id": "dashboard_feed",
+      "name": "Dashboard — Feed",
+      "description": "Activity feed showing completed tasks and care reasons. Group-filtered.",
+      "route": "/dashboard",
+      "accessControl": "group_filter",
+      "sensitiveRedaction": "admin_or_group_admin",
+      "filters": ["completedOnly", "type", "member", "dateRange"],
+      "fieldsShown": ["title", "member", "description", "completionDate", "assignee", "interactionType", "sensitivityBadge"]
+    },
+    {
+      "id": "member_detail",
+      "name": "Member Detail — Related Tasks",
+      "description": "Tasks linked to a specific church member, shown on their detail page. Must be group-filtered so users don't see tasks from private groups they don't belong to.",
+      "route": "/members/:id",
+      "accessControl": "group_filter",
+      "sensitiveRedaction": "admin_or_group_admin",
+      "filters": ["byMemberId"],
+      "fieldsShown": ["title", "status", "dueDate"]
+    },
+    {
+      "id": "care_reason_detail",
+      "name": "Care Reason Detail — Related Tasks",
+      "description": "Tasks linked to a specific care reason. Must be group-filtered.",
+      "route": "/care-reasons/:id",
+      "accessControl": "group_filter",
+      "sensitiveRedaction": "admin_or_group_admin",
+      "filters": ["byCareReasonId"],
+      "fieldsShown": ["title", "status", "dueDate", "member"]
+    },
+    {
+      "id": "task_detail",
+      "name": "Task Detail",
+      "description": "Full detail view of a single task including notes. Must verify the current user has access to this task's groups before displaying any content.",
+      "route": "/tasks/:id",
+      "accessControl": "single_item_check",
+      "sensitiveRedaction": "admin_or_group_admin",
+      "filters": [],
+      "fieldsShown": ["title", "description", "status", "dueDate", "member", "assignee", "careReason", "groups", "notes", "interactionType", "sensitivityBadge", "recurrenceInfo", "completedAt"]
+    },
+    {
+      "id": "task_detail_drawer",
+      "name": "Task Detail Drawer",
+      "description": "Desktop drawer variant of task detail. Same security rules as task_detail.",
+      "route": "/tasks (drawer)",
+      "accessControl": "single_item_check",
+      "sensitiveRedaction": "admin_or_group_admin",
+      "filters": [],
+      "fieldsShown": ["title", "description", "status", "dueDate", "member", "assignee", "careReason", "groups", "notes", "interactionType", "sensitivityBadge", "recurrenceInfo", "completedAt"]
+    },
+    {
+      "id": "task_edit_form",
+      "name": "Task Edit Form",
+      "description": "Edit form for an existing task. Must verify user can access the task before showing the form. Sensitive redaction is not applicable since the user is editing.",
+      "route": "/tasks/:id/edit",
+      "accessControl": "single_item_check",
+      "sensitiveRedaction": "none",
+      "filters": [],
+      "fieldsShown": ["title", "description", "dueDate", "member", "assignee", "careReason", "groups", "interactionType", "isSensitive", "recurrence"]
+    },
+    {
+      "id": "goal_detail",
+      "name": "Goal Detail — Completed Tasks",
+      "description": "Completed tasks contributing to a goal. Group-filtered.",
+      "route": "/goals/:id",
+      "accessControl": "group_filter",
+      "sensitiveRedaction": "admin_or_group_admin",
+      "filters": ["byAssignedUser", "statusComplete", "withinGoalDateRange"],
+      "fieldsShown": ["title", "member", "completionDate"]
+    },
+    {
+      "id": "reports",
+      "name": "Reports",
+      "description": "Analytics and CSV export of task data. Group-filtered. Sensitive content in exports must be redacted for non-privileged users.",
+      "route": "/reports",
+      "accessControl": "group_filter",
+      "sensitiveRedaction": "admin_or_group_admin",
+      "filters": ["dateRange"],
+      "fieldsShown": ["title", "description", "status", "dueDate", "assignee", "member", "interactionType"]
+    }
+  ]
+}

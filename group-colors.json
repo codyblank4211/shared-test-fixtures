@@ -1,0 +1,40 @@
+{
+  "description": "Contract tests for group color name lookup — shared between Flutter (Dart) and web (TypeScript)",
+  "conventions": {
+    "fallback": "When a hex code is not in the known color table, return the hex string as-is (not a default color name).",
+    "caseSensitivity": "Hex matching should be case-insensitive."
+  },
+  "cases": [
+    { "id": "blue", "hex": "#3498db", "expected": "Blue" },
+    { "id": "green", "hex": "#2ecc71", "expected": "Green" },
+    { "id": "red", "hex": "#e74c3c", "expected": "Red" },
+    { "id": "orange", "hex": "#f39c12", "expected": "Orange" },
+    { "id": "purple", "hex": "#9b59b6", "expected": "Purple" },
+    { "id": "teal", "hex": "#1abc9c", "expected": "Teal" },
+    { "id": "rust", "hex": "#d35400", "expected": "Rust" },
+    { "id": "crimson", "hex": "#c0392b", "expected": "Crimson" },
+    { "id": "jade", "hex": "#16a085", "expected": "Jade" },
+    { "id": "violet", "hex": "#8e44ad", "expected": "Violet" },
+    { "id": "emerald", "hex": "#27ae60", "expected": "Emerald" },
+    { "id": "yellow", "hex": "#f1c40f", "expected": "Yellow" },
+    { "id": "gray", "hex": "#7f8c8d", "expected": "Gray" },
+    {
+      "id": "unknown_hex",
+      "description": "Unknown hex returns the hex itself, not a default color name",
+      "hex": "#ff00ff",
+      "expected": "#ff00ff"
+    },
+    {
+      "id": "uppercase_hex",
+      "description": "Case-insensitive matching — uppercase input matches lowercase table entry",
+      "hex": "#3498DB",
+      "expected": "Blue"
+    },
+    {
+      "id": "unknown_uppercase",
+      "description": "Unknown uppercase hex returned as-is (preserving input casing)",
+      "hex": "#FF00FF",
+      "expected": "#FF00FF"
+    }
+  ]
+}

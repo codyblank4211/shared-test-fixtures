@@ -1,0 +1,91 @@
+{
+  "description": "Contract tests for avatar color generation and initials — shared between Flutter (Dart) and web (TypeScript)",
+  "conventions": {
+    "colors": "Both platforms use the same hash algorithm: hash = charCode + ((hash << 5) - hash). Hue derived from (hash & 0xFF) % 360 and ((hash >> 8) & 0xFF) % 360. Saturation and lightness use pastelFactor=0.7.",
+    "initials": "First letter of first word + first letter of last word, uppercased. Single word returns one letter. Empty/whitespace returns empty string."
+  },
+  "cases": {
+    "colors": [
+      {
+        "id": "two_word_name",
+        "description": "Standard two-word name",
+        "name": "John Doe",
+        "expected": { "hue1": 165, "hue2": 92, "saturation": 0.49, "lightness": 0.74 }
+      },
+      {
+        "id": "two_word_name_2",
+        "description": "Another two-word name to verify hash variation",
+        "name": "Jane Smith",
+        "expected": { "hue1": 145, "hue2": 66, "saturation": 0.49, "lightness": 0.74 }
+      },
+      {
+        "id": "single_character",
+        "description": "Single character name",
+        "name": "A",
+        "expected": { "hue1": 65, "hue2": 0, "saturation": 0.49, "lightness": 0.74 }
+      },
+      {
+        "id": "empty_string",
+        "description": "Empty string produces zero hash",
+        "name": "",
+        "expected": { "hue1": 0, "hue2": 0, "saturation": 0.49, "lightness": 0.74 }
+      },
+      {
+        "id": "three_word_name",
+        "description": "Three-word name — middle name ignored for hue, included in hash",
+        "name": "Mary Ann Johnson",
+        "expected": { "hue1": 131, "hue2": 43, "saturation": 0.49, "lightness": 0.74 }
+      },
+      {
+        "id": "single_word",
+        "description": "Single word name",
+        "name": "Bob",
+        "expected": { "hue1": 149, "hue2": 5, "saturation": 0.49, "lightness": 0.74 }
+      },
+      {
+        "id": "lowercase_name",
+        "description": "Lowercase name — hash is case-sensitive",
+        "name": "alice wonderland",
+        "expected": { "hue1": 198, "hue2": 85, "saturation": 0.49, "lightness": 0.74 }
+      }
+    ],
+    "initials": [
+      {
+        "id": "two_words",
+        "description": "First and last initials",
+        "name": "John Doe",
+        "expected": "JD"
+      },
+      {
+        "id": "single_word",
+        "description": "Single word returns one initial",
+        "name": "Bob",
+        "expected": "B"
+      },
+      {
+        "id": "three_words",
+        "description": "Uses first and last word only",
+        "name": "Mary Ann Johnson",
+        "expected": "MJ"
+      },
+      {
+        "id": "empty_string",
+        "description": "Empty string returns empty",
+        "name": "",
+        "expected": ""
+      },
+      {
+        "id": "whitespace_only",
+        "description": "Whitespace-only returns empty",
+        "name": "  ",
+        "expected": ""
+      },
+      {
+        "id": "lowercase_input",
+        "description": "Lowercase input is uppercased",
+        "name": "alice wonderland",
+        "expected": "AW"
+      }
+    ]
+  }
+}

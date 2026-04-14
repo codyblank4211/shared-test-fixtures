@@ -1,0 +1,137 @@
+{
+  "description": "Contract tests for care reason filtering logic — shared between Flutter (Dart) and web (TypeScript)",
+  "conventions": {
+    "filters": "Each case provides filter options and the expected list of care reason IDs that pass. All cases use the shared careReasons and tags arrays.",
+    "dates": "dateOfEvent and filter dates use ISO 8601 format. Filter startDate/endDate use YYYY-MM-DD.",
+    "unassigned": "Web uses '__unassigned__' token, mobile uses 'none'. The fixture uses 'UNASSIGNED' — each platform maps to its local token.",
+    "status": "Care reason status is derived from completedAt: null = 'active', non-null = 'resolved'.",
+    "archive": "Resolved care reasons with completedAt older than 7 days from 'now' are hidden unless includeArchived is true. Tests that use archive filtering provide a 'now' date.",
+    "now": "Optional per-case override for the current date (ISO 8601). Used for archive tests. If not provided, archive filtering is skipped or uses platform default."
+  },
+  "careReasons": [
+    { "id": "reason1", "title": "Hospital visit", "description": "Member hospitalized after surgery", "dateOfEvent": "2026-04-01T00:00:00", "churchMemberId": "member1", "assignedUserId": "user1", "completedAt": null },
+    { "id": "reason2", "title": "Bereavement", "description": "Loss of family member", "dateOfEvent": "2026-04-03T00:00:00", "churchMemberId": "member2", "assignedUserId": "user2", "completedAt": "2026-04-03T12:00:00" },
+    { "id": "reason3", "title": "Financial hardship", "description": "Job loss and needs assistance", "dateOfEvent": "2026-04-05T00:00:00", "churchMemberId": "member1", "assignedUserId": null, "completedAt": null },
+    { "id": "reason4", "title": "New baby", "description": "Family welcomed a new baby", "dateOfEvent": "2026-04-10T00:00:00", "churchMemberId": "member3", "assignedUserId": "user1", "completedAt": null },
+    { "id": "reason5", "title": "Marriage counseling", "description": "Couple needs pastoral support", "dateOfEvent": "2026-03-28T00:00:00", "churchMemberId": "member2", "assignedUserId": "user1", "completedAt": "2026-03-20T10:00:00" }
+  ],
+  "tags": [
+    { "reasonId": "reason1", "groupId": "groupA" },
+    { "reasonId": "reason2", "groupId": "groupA" },
+    { "reasonId": "reason2", "groupId": "groupB" },
+    { "reasonId": "reason4", "groupId": "groupB" }
+  ],
+  "cases": [
+    {
+      "id": "no_filters",
+      "description": "No filters applied, include archived — all care reasons returned",
+      "filters": { "statuses": [], "assignedUserIds": [], "memberIds": [], "groupIds": [], "startDate": "", "endDate": "", "searchQuery": "", "includeArchived": true },
+      "expected": ["reason1", "reason2", "reason3", "reason4", "reason5"]
+    },
+    {
+      "id": "status_active",
+      "description": "Filter by active status (no completedAt)",
+      "filters": { "statuses": ["active"], "assignedUserIds": [], "memberIds": [], "groupIds": [], "startDate": "", "endDate": "", "searchQuery": "", "includeArchived": true },
+      "expected": ["reason1", "reason3", "reason4"]
+    },
+    {
+      "id": "status_resolved",
+      "description": "Filter by resolved status (has completedAt)",
+      "filters": { "statuses": ["resolved"], "assignedUserIds": [], "memberIds": [], "groupIds": [], "startDate": "", "endDate": "", "searchQuery": "", "includeArchived": true },
+      "expected": ["reason2", "reason5"]
+    },
+    {
+      "id": "assigned_user",
+      "description": "Filter by specific assigned user",
+      "filters": { "statuses": [], "assignedUserIds": ["user1"], "memberIds": [], "groupIds": [], "startDate": "", "endDate": "", "searchQuery": "", "includeArchived": true },
+      "expected": ["reason1", "reason4", "reason5"]
+    },
+    {
+      "id": "unassigned",
+      "description": "Filter for unassigned care reasons using platform token",
+      "filters": { "statuses": [], "assignedUserIds": ["UNASSIGNED"], "memberIds": [], "groupIds": [], "startDate": "", "endDate": "", "searchQuery": "", "includeArchived": true },
+      "expected": ["reason3"]
+    },
+    {
+      "id": "member_filter",
+      "description": "Filter by church member",
+      "filters": { "statuses": [], "assignedUserIds": [], "memberIds": ["member1"], "groupIds": [], "startDate": "", "endDate": "", "searchQuery": "", "includeArchived": true },
+      "expected": ["reason1", "reason3"]
+    },
+    {
+      "id": "group_filter",
+      "description": "Filter by group (via tags)",
+      "filters": { "statuses": [], "assignedUserIds": [], "memberIds": [], "groupIds": ["groupB"], "startDate": "", "endDate": "", "searchQuery": "", "includeArchived": true },
+      "expected": ["reason2", "reason4"]
+    },
+    {
+      "id": "date_range_start_only",
+      "description": "Filter by start date only (dateOfEvent >= start)",
+      "filters": { "statuses": [], "assignedUserIds": [], "memberIds": [], "groupIds": [], "startDate": "2026-04-03", "endDate": "", "searchQuery": "", "includeArchived": true },
+      "expected": ["reason2", "reason3", "reason4"]
+    },
+    {
+      "id": "date_range_end_only",
+      "description": "Filter by end date only (dateOfEvent <= end)",
+      "filters": { "statuses": [], "assignedUserIds": [], "memberIds": [], "groupIds": [], "startDate": "", "endDate": "2026-04-03", "searchQuery": "", "includeArchived": true },
+      "expected": ["reason1", "reason2", "reason5"]
+    },
+    {
+      "id": "date_range_both",
+      "description": "Filter by start and end date",
+      "filters": { "statuses": [], "assignedUserIds": [], "memberIds": [], "groupIds": [], "startDate": "2026-04-01", "endDate": "2026-04-05", "searchQuery": "", "includeArchived": true },
+      "expected": ["reason1", "reason2", "reason3"]
+    },
+    {
+      "id": "search_title",
+      "description": "Search matches title (case-insensitive)",
+      "filters": { "statuses": [], "assignedUserIds": [], "memberIds": [], "groupIds": [], "startDate": "", "endDate": "", "searchQuery": "baby", "includeArchived": true },
+      "expected": ["reason4"]
+    },
+    {
+      "id": "search_description",
+      "description": "Search matches description",
+      "filters": { "statuses": [], "assignedUserIds": [], "memberIds": [], "groupIds": [], "startDate": "", "endDate": "", "searchQuery": "surgery", "includeArchived": true },
+      "expected": ["reason1"]
+    },
+    {
+      "id": "search_no_match",
+      "description": "Search with no matches returns empty",
+      "filters": { "statuses": [], "assignedUserIds": [], "memberIds": [], "groupIds": [], "startDate": "", "endDate": "", "searchQuery": "zzzzz", "includeArchived": true },
+      "expected": []
+    },
+    {
+      "id": "combined_status_and_member",
+      "description": "Multiple filters combined — active care reasons for member1",
+      "filters": { "statuses": ["active"], "assignedUserIds": [], "memberIds": ["member1"], "groupIds": [], "startDate": "", "endDate": "", "searchQuery": "", "includeArchived": true },
+      "expected": ["reason1", "reason3"]
+    },
+    {
+      "id": "combined_group_and_date",
+      "description": "Group filter combined with date range",
+      "filters": { "statuses": [], "assignedUserIds": [], "memberIds": [], "groupIds": ["groupA"], "startDate": "2026-04-01", "endDate": "2026-04-05", "searchQuery": "", "includeArchived": true },
+      "expected": ["reason1", "reason2"]
+    },
+    {
+      "id": "archive_hides_old_resolved",
+      "description": "Without includeArchived, resolved care reasons older than 7 days from 'now' are hidden",
+      "now": "2026-04-05T00:00:00",
+      "filters": { "statuses": [], "assignedUserIds": [], "memberIds": [], "groupIds": [], "startDate": "", "endDate": "", "searchQuery": "", "includeArchived": false },
+      "expected": ["reason1", "reason2", "reason3", "reason4"]
+    },
+    {
+      "id": "archive_keeps_recent_resolved",
+      "description": "Resolved care reasons within 7 days of 'now' are kept even without includeArchived",
+      "now": "2026-04-05T00:00:00",
+      "filters": { "statuses": ["resolved"], "assignedUserIds": [], "memberIds": [], "groupIds": [], "startDate": "", "endDate": "", "searchQuery": "", "includeArchived": false },
+      "expected": ["reason2"]
+    },
+    {
+      "id": "archive_include_shows_all",
+      "description": "With includeArchived, all resolved care reasons are shown regardless of age",
+      "now": "2026-04-05T00:00:00",
+      "filters": { "statuses": ["resolved"], "assignedUserIds": [], "memberIds": [], "groupIds": [], "startDate": "", "endDate": "", "searchQuery": "", "includeArchived": true },
+      "expected": ["reason2", "reason5"]
+    }
+  ]
+}

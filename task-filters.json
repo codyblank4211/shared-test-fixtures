@@ -1,0 +1,136 @@
+{
+  "description": "Contract tests for task filtering logic — shared between Flutter (Dart) and web (TypeScript)",
+  "conventions": {
+    "filters": "Each case provides filter options and the expected list of task IDs that pass. All cases use the shared tasks and tags arrays.",
+    "dates": "Due dates and filter dates use ISO 8601 format. Filter startDate/endDate use YYYY-MM-DD.",
+    "unassigned": "Web uses '__unassigned__' token, mobile uses 'none'. The fixture uses 'UNASSIGNED' — each platform maps to its local token.",
+    "archive": "Completed tasks with completedAt older than 7 days from 'now' are hidden unless includeArchived is true. Tests that use archive filtering provide a 'now' date.",
+    "now": "Optional per-case override for the current date (ISO 8601). Used for archive tests. If not provided, archive filtering is skipped or uses platform default."
+  },
+  "tasks": [
+    { "id": "task1", "title": "Call John", "description": "Follow up call", "status": "incomplete", "dueDate": "2026-04-01T00:00:00", "churchMemberId": "member1", "assignedUserId": "user1", "completedAt": null },
+    { "id": "task2", "title": "Visit Mary", "description": "Home visit", "status": "complete", "dueDate": "2026-04-03T00:00:00", "churchMemberId": "member2", "assignedUserId": "user2", "completedAt": "2026-04-03T12:00:00" },
+    { "id": "task3", "title": "Email group", "description": "Send newsletter", "status": "incomplete", "dueDate": "2026-04-05T00:00:00", "churchMemberId": "member1", "assignedUserId": null, "completedAt": null },
+    { "id": "task4", "title": "Prayer meeting", "description": "Weekly prayer", "status": "incomplete", "dueDate": "2026-04-10T00:00:00", "churchMemberId": "member3", "assignedUserId": "user1", "completedAt": null },
+    { "id": "task5", "title": "Meal delivery", "description": "Deliver meal to family", "status": "complete", "dueDate": "2026-03-28T00:00:00", "churchMemberId": "member2", "assignedUserId": "user1", "completedAt": "2026-03-20T10:00:00" }
+  ],
+  "tags": [
+    { "taskId": "task1", "groupId": "groupA" },
+    { "taskId": "task2", "groupId": "groupA" },
+    { "taskId": "task2", "groupId": "groupB" },
+    { "taskId": "task4", "groupId": "groupB" }
+  ],
+  "cases": [
+    {
+      "id": "no_filters",
+      "description": "No filters applied, include archived — all tasks returned",
+      "filters": { "statuses": [], "assignedUserIds": [], "memberIds": [], "groupIds": [], "startDate": "", "endDate": "", "searchQuery": "", "includeArchived": true },
+      "expected": ["task1", "task2", "task3", "task4", "task5"]
+    },
+    {
+      "id": "status_incomplete",
+      "description": "Filter by incomplete status",
+      "filters": { "statuses": ["incomplete"], "assignedUserIds": [], "memberIds": [], "groupIds": [], "startDate": "", "endDate": "", "searchQuery": "", "includeArchived": true },
+      "expected": ["task1", "task3", "task4"]
+    },
+    {
+      "id": "status_complete",
+      "description": "Filter by complete status",
+      "filters": { "statuses": ["complete"], "assignedUserIds": [], "memberIds": [], "groupIds": [], "startDate": "", "endDate": "", "searchQuery": "", "includeArchived": true },
+      "expected": ["task2", "task5"]
+    },
+    {
+      "id": "assigned_user",
+      "description": "Filter by specific assigned user",
+      "filters": { "statuses": [], "assignedUserIds": ["user1"], "memberIds": [], "groupIds": [], "startDate": "", "endDate": "", "searchQuery": "", "includeArchived": true },
+      "expected": ["task1", "task4", "task5"]
+    },
+    {
+      "id": "unassigned",
+      "description": "Filter for unassigned tasks using platform token",
+      "filters": { "statuses": [], "assignedUserIds": ["UNASSIGNED"], "memberIds": [], "groupIds": [], "startDate": "", "endDate": "", "searchQuery": "", "includeArchived": true },
+      "expected": ["task3"]
+    },
+    {
+      "id": "member_filter",
+      "description": "Filter by church member",
+      "filters": { "statuses": [], "assignedUserIds": [], "memberIds": ["member1"], "groupIds": [], "startDate": "", "endDate": "", "searchQuery": "", "includeArchived": true },
+      "expected": ["task1", "task3"]
+    },
+    {
+      "id": "group_filter",
+      "description": "Filter by group (via tags)",
+      "filters": { "statuses": [], "assignedUserIds": [], "memberIds": [], "groupIds": ["groupB"], "startDate": "", "endDate": "", "searchQuery": "", "includeArchived": true },
+      "expected": ["task2", "task4"]
+    },
+    {
+      "id": "date_range_start_only",
+      "description": "Filter by start date only",
+      "filters": { "statuses": [], "assignedUserIds": [], "memberIds": [], "groupIds": [], "startDate": "2026-04-03", "endDate": "", "searchQuery": "", "includeArchived": true },
+      "expected": ["task2", "task3", "task4"]
+    },
+    {
+      "id": "date_range_end_only",
+      "description": "Filter by end date only",
+      "filters": { "statuses": [], "assignedUserIds": [], "memberIds": [], "groupIds": [], "startDate": "", "endDate": "2026-04-03", "searchQuery": "", "includeArchived": true },
+      "expected": ["task1", "task2", "task5"]
+    },
+    {
+      "id": "date_range_both",
+      "description": "Filter by start and end date",
+      "filters": { "statuses": [], "assignedUserIds": [], "memberIds": [], "groupIds": [], "startDate": "2026-04-01", "endDate": "2026-04-05", "searchQuery": "", "includeArchived": true },
+      "expected": ["task1", "task2", "task3"]
+    },
+    {
+      "id": "search_title",
+      "description": "Search matches title (case-insensitive)",
+      "filters": { "statuses": [], "assignedUserIds": [], "memberIds": [], "groupIds": [], "startDate": "", "endDate": "", "searchQuery": "prayer", "includeArchived": true },
+      "expected": ["task4"]
+    },
+    {
+      "id": "search_description",
+      "description": "Search matches description",
+      "filters": { "statuses": [], "assignedUserIds": [], "memberIds": [], "groupIds": [], "startDate": "", "endDate": "", "searchQuery": "newsletter", "includeArchived": true },
+      "expected": ["task3"]
+    },
+    {
+      "id": "search_no_match",
+      "description": "Search with no matches returns empty",
+      "filters": { "statuses": [], "assignedUserIds": [], "memberIds": [], "groupIds": [], "startDate": "", "endDate": "", "searchQuery": "zzzzz", "includeArchived": true },
+      "expected": []
+    },
+    {
+      "id": "combined_status_and_member",
+      "description": "Multiple filters combined — incomplete tasks for member1",
+      "filters": { "statuses": ["incomplete"], "assignedUserIds": [], "memberIds": ["member1"], "groupIds": [], "startDate": "", "endDate": "", "searchQuery": "", "includeArchived": true },
+      "expected": ["task1", "task3"]
+    },
+    {
+      "id": "combined_group_and_date",
+      "description": "Group filter combined with date range",
+      "filters": { "statuses": [], "assignedUserIds": [], "memberIds": [], "groupIds": ["groupA"], "startDate": "2026-04-01", "endDate": "2026-04-05", "searchQuery": "", "includeArchived": true },
+      "expected": ["task1", "task2"]
+    },
+    {
+      "id": "archive_hides_old_completed",
+      "description": "Without includeArchived, completed tasks older than 7 days from 'now' are hidden",
+      "now": "2026-04-05T00:00:00",
+      "filters": { "statuses": [], "assignedUserIds": [], "memberIds": [], "groupIds": [], "startDate": "", "endDate": "", "searchQuery": "", "includeArchived": false },
+      "expected": ["task1", "task2", "task3", "task4"]
+    },
+    {
+      "id": "archive_keeps_recent_completed",
+      "description": "Completed tasks within 7 days of 'now' are kept even without includeArchived",
+      "now": "2026-04-05T00:00:00",
+      "filters": { "statuses": ["complete"], "assignedUserIds": [], "memberIds": [], "groupIds": [], "startDate": "", "endDate": "", "searchQuery": "", "includeArchived": false },
+      "expected": ["task2"]
+    },
+    {
+      "id": "archive_include_shows_all",
+      "description": "With includeArchived, all completed tasks are shown regardless of age",
+      "now": "2026-04-05T00:00:00",
+      "filters": { "statuses": ["complete"], "assignedUserIds": [], "memberIds": [], "groupIds": [], "startDate": "", "endDate": "", "searchQuery": "", "includeArchived": true },
+      "expected": ["task2", "task5"]
+    }
+  ]
+}
